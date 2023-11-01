@@ -80,6 +80,20 @@ ggplot()+
   xlab("Time in days")+
   ylab("Reff")+
   labs(title=paste("Reproductio number levels with: Beta = ",parameters[1],"and Gamma= ",parameters[2]))
+
+#To get incidence data from the infected dataset (To extract the daily incidence data from the output of the number of infected people, the difference between the number of infected individuals on consecutive days will give newly infected people on each day. )
+
+# Calculate daily incidence
+output$daily_incidence <- c(0, diff(output$I))
+output
+
+# Plot daily incidence
+ggplot(data = output, aes(x = time, y = daily_incidence)) +
+  geom_line() +
+  xlab("Time in days") +
+  ylab("Daily Incidence") +
+  labs(title = "Daily Incidence of Infections")
+
   
                 
                 
