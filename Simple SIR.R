@@ -1,11 +1,11 @@
 #SIR Modelling (basic)
 
 #library:
-install.packages("deSolve")
+# install.packages("deSolve")
 library(deSolve)
-install.packages("reshape2")
+# install.packages("reshape2")
 library(reshape2)
-install.packages("ggplot2")
+# install.packages("ggplot2")
 library(ggplot2)
 
 #inputs
@@ -84,7 +84,7 @@ ggplot()+
 #To get incidence data from the infected dataset (To extract the daily incidence data from the output of the number of infected people, the difference between the number of infected individuals on consecutive days will give newly infected people on each day. )
 
 # Calculate daily incidence
-output$daily_incidence <- c(0, diff(output$I))
+output$daily_incidence <- -c(0, diff(output$S))
 output
 
 # Plot daily incidence
