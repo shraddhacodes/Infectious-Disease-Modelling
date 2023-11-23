@@ -1,43 +1,81 @@
+functions {
+  real[] SIR(real t, //time
+  real[] y, //system state
+  real[] theta, //parameters
+  real[] x_r, //real data
+  int[] x_i) //integer data 
+  {
+    //define real data 
+    real gamma = x_r[1];
+    
+    // define parameters
+    real beta = theta[1];
+    
+    //define integer data 
+    int n_recov = x_i[1]; 
+    int S0 = x_i[2]; 
+    int n_days = x_i[3];
+    
+    //define compartments
+    real S; real I; real R;
+    
+    //define states
+    real dS_dt; real dI_dt; real dR_dt;
+    
+    //define FOI
+    real FOI;
+    
+    //initial conditions
+    S = y[1]; I = y[2]; R = y[3];
+    
+    //calculate FOI
+    FOI = beta * I / S0;  
+    
+    //ODE
+    dS_dt = -FOI * S;
+    dI_dt = FOI * S - gamma * I;
+    dR_dt = gamma * I;
+    return {dS_dt, dI_dt, dR_dt};
+  }
+}
+
 data {
-  int<lower=1> T;  // Number of time points
-  int<lower=1> N;  // Total population size
-  int<lower=1, upper=T> t_infected;  // Time point when the first infection occurs
-  int<lower=0, upper=100> incidence[T];   // Observed incidence data
-  real<lower=0> gamma;  // Recovery rate
+  int<lower=1> n_ts;       // no of days observed
+  int<lower=1> n_data;    //no of data points to fit to
+  real<lower=0> gamma;   // recovery rate
+  int y[n_data];        // data, reported incidence each day
+  real ts[n_ts];       // 1:n_days
+  int n_pop;           // Total population size
+  int n_recov;         // Number of recovered individuals
+  real I0;             // Initial infectious population
+}
+
+transformed data {
+  int S0 = n_pop - n_recov;
+  real x_r[1] = {gamma};
+  int x_i[3] = {n_ts};
 }
 
 parameters {
-  real<lower=0> beta;  // Transmission rate
-  vector<lower=0>[T] S;  // Susceptible individuals over time
-  vector<lower=0>[T] I;  // Infectious individuals over time
-  vector<lower=0>[T] R;  // Recovered individuals over time
+  real<lower=0> beta;
+}
+
+transformed parameters {
+  real y_hat[n_ts, 3];
+  real theta[1] = {beta};
+  real init[3] = {n_pop - n_recov - I0, I0, n_recov};  // Assuming S0 = n_pop - n_recov
+  real lambda[n_ts];
+  real lambda_fit[n_data];
+  y_hat = integrate_ode_rk45(SIR, init, 1e-6, ts, theta, x_r, x_i);
+  for (t in 1:n_ts) lambda[t] = beta * y_hat[t, 2] / (n_pop - n_recov);
+  for (t in 1:n_ts) lambda_fit[t] = lambda[t] + 0.0001;
 }
 
 model {
-  // Priors
-  beta ~ normal(0.5, 0.2);  // Prior on transmission rate
-
-  // Initial conditions
-  S[1] ~ normal(N - incidence[1], 10);  // Prior on initial susceptible population
-  I[1] ~ normal(incidence[1], 10);  // Prior on initial infectious population
-  R[1] ~ normal(0, 10);  // Prior on initial recovered population
-
-  // SIR model equations
-  for (t in 2:T) {
-    S[t] ~ normal(S[t-1] - beta * S[t-1] * I[t-1] / N, 10);
-    I[t] ~ normal(I[t-1] + beta * S[t-1] * I[t-1] / N - gamma * I[t-1], 10);
-    R[t] ~ normal(R[t-1] + gamma * I[t-1], 10);
-  }
-// Likelihood function (Poisson distribution for incidence data)
-for (t in t_infected:T) {
-  target += poisson_lpmf(incidence[t - t_infected + 1] | I[t]);
+  target += poisson_lpmf(y | lambda_fit);
+  beta ~ normal(2.2, 1);
 }
 
-}
 generated quantities {
-  // Generate simulated incidence data for validation or prediction
-  vector[T] incidence_sim;
-  for (t in t_infected:T) {
-    incidence_sim[t] = poisson_rng(I[t]);
-  }
+  real R_0 = beta / gamma;
 }
