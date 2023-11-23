@@ -53,7 +53,7 @@ data {
 transformed data {
   int S0 = n_pop - n_recov;
   real x_r[1] = {gamma};
-  int x_i[3] = {n_ts};
+  int x_i[3] = {n_recov, S0,n_ts};
 }
 
 parameters {
