@@ -68,7 +68,7 @@ transformed parameters {
   real lambda_fit[n_data];
   real initial_time = 0 ;
   y_hat = integrate_ode_rk45(SIR, init, initial_time, ts, theta, x_r, x_i);
-  for (t in 1:n_ts) lambda[t] = beta * y_hat[t, 2] / (n_pop);
+  for (t in 1:n_ts) lambda[t] = beta * y_hat[t, 2] / S0;
   for (t in 1:n_ts) lambda_fit[t] = lambda[t] + 0.0001;
   
 }
