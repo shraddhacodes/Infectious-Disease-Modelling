@@ -9,6 +9,6 @@
 - **File Name:** `beta r.R`
 
 ## Beta Estimation Stan Model Code
-- **Description:** Stan code written to estimate the transmission rate (beta) given the recovery rate (gamma) and incidence rate data.
+- **Description:** Stan code written to estimate the transmission rate (beta) given the recovery rate (gamma) and incidence rate data. Derive Generation Interval Data (Renewal Modelling).
 - **File Name:** `Beta_Estimation (Stan).stan`
 
