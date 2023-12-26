@@ -30,10 +30,11 @@ stan_output <- sampling(stan_model, data = data_list, chains = chains, iter = it
 # Print summary statistics and diagnostics
 print(stan_output)
 
-
-
 # Extract and plot posterior distributions
 posterior <- extract(stan_output)
+# Adjust plot margins
+par(mar = c(2, 2, 2, 2))
+# Create pairs plot
 pairs(posterior)
 
 # Extract and summarize specific parameters
@@ -44,3 +45,11 @@ summary(posterior$R_0)
 library(ggplot2)
 beta <- extract(stan_output,'beta')[[1]]
 qplot(beta)
+
+# Extract the generation interval distribution samples
+samples <- extract(stan_output, "generation_interval_distribution")$generation_interval_distribution
+samples
+
+# Plot the distribution
+plot(density(samples), main = 'Intrinsic Generation Interval Distribution', 
+     xlab = 'Time between infection and transmission', ylab = 'Density', col = 'blue')
