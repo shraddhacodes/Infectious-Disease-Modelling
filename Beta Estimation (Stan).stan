@@ -65,16 +65,19 @@ transformed parameters {
   real theta[1] = {beta};
   real init[3] = {n_pop - n_recov - I0, I0, n_recov};  
   real lambda[n_ts];
+  real generation_interval_distribution[n_ts];
   real lambda_fit[n_data];
   real initial_time = 0 ;
   y_hat = integrate_ode_rk45(SIR, init, initial_time, ts, theta, x_r, x_i);
-  for (t in 1:n_ts) lambda[t] = beta * y_hat[t, 2] / S0;
+  for (t in 1:n_ts) {
+    lambda[t] = beta * y_hat[t, 2] / S0;
+    generation_interval_distribution[t] = gamma * exp(-gamma * t);
+  } 
+  
   for (t in 1:n_ts) lambda_fit[t] = lambda[t] + 0.0001;
   
 }
   
-
-
 model {
   target += poisson_lpmf(y | lambda_fit);
   beta ~ normal(2.2, 1);
