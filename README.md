@@ -1,7 +1,7 @@
 # SIR-Model
 
 ## Simple-SIR R File
-- **Description:** A R file for generating incidence data using compartmental modeling of the SIR (Susceptible-Infectious-Recovered) model.
+- **Description:** A R file for generating incidence data using compartmental modeling (deSolve) of the SIR (Susceptible-Infectious-Recovered) model.
 - **File Name:** `Simple SIR.R`
 
 ## Beta Estimation
