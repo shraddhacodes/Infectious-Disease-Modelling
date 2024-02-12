@@ -1,11 +1,11 @@
 #SIR Modelling (basic)
 
 #library:
-# install.packages("deSolve")
+install.packages("deSolve")
 library(deSolve)
-# install.packages("reshape2")
+install.packages("reshape2")
 library(reshape2)
-# install.packages("ggplot2")
+install.packages("ggplot2")
 library(ggplot2)
 
 #inputs
@@ -44,7 +44,7 @@ output<-as.data.frame(ode(y=state_values,
                           parms=parameters))
 
 output
-
+time<-output[,"time"]
 
 output_full<-melt(as.data.frame(output),id='time')
 #The purpose of the melt function is to transform a wide-format data frame into a long-format data frame. 
@@ -79,9 +79,11 @@ ggplot()+
   geom_line(data=output,aes(x=time,y=reff),color='green')+
   xlab("Time in days")+
   ylab("Reff")+
-  labs(title=paste("Reproductio number levels with: Beta = ",parameters[1],"and Gamma= ",parameters[2]))
+  labs(title=paste("Reproduction number levels with: Beta = ",parameters[1],"and Gamma= ",parameters[2]))
 
-#To get incidence data from the infected dataset (To extract the daily incidence data from the output of the number of infected people, the difference between the number of infected individuals on consecutive days will give newly infected people on each day. )
+
+
+#To get incidence data from the infected dataset (To extract the daily incidence data from the output of the number of infected people, you can calculate the difference between the number of infected individuals on consecutive days. This will give you the number of newly infected people on each day. )
 
 # Calculate daily incidence
 output$daily_incidence <- -c(0, diff(output$S))
@@ -94,10 +96,13 @@ ggplot(data = output, aes(x = time, y = daily_incidence)) +
   ylab("Daily Incidence") +
   labs(title = "Daily Incidence of Infections")
 
-  
-                
-                
+x <- matrix(0,nrow=length(time),ncol=2)
+x
+x[,1]<-time
+x[,2]<-output$daily_incidence
 
 
+#Write to Excel
+write.csv(x, file = "C:/Users/hp/OneDrive/Desktop/Shraddha laptop backup/Sumali Mam/codes/SIR_Simulation", row.names = FALSE)
 
 
