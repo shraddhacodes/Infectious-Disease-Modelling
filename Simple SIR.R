@@ -9,16 +9,23 @@ install.packages("ggplot2")
 library(ggplot2)
 
 #inputs
-N<-1000 #population
-state_values<-c(S=N-1, #susceptible
-                I=1,  #infected
-                R=0)  #recovered
 
-parameters <- c(beta<- 1/2, #infection rate days ^-1
-                gamma<-1/4) #recovery rate days ^-1
+initP<-50000000# population size
+
+
+initI<-100 # Infectious
+initR<-0 # Immune
+initS<-initP-initI-initR # Susceptible (non-immune)
+R0=12
+state <- c(S = initS, I = initI,R = initR)
+parameters <- c(beta<-R0*1/7 , 
+                gamma<-1/7)
+beta
 
 #Timeframe
-times<-seq(0,100,by=1)
+t_start <- 0
+t_stop <- 25
+times <- seq(t_start, t_stop)
 
 #Model
 sir_model<-function(time, state, parameters){
@@ -36,17 +43,39 @@ sir_model<-function(time, state, parameters){
 
 #Outputs
 
-#Calculation of differtial equations
+#Calculation of differential equations
 
-output<-as.data.frame(ode(y=state_values,
-                          times=times,
-                          func=sir_model,
-                          parms=parameters))
+out<-ode(y=state,times=times,func=sir_model,parms=parameters)
 
-output
-time<-output[,"time"]
+# total population
+pop<-out[,"S"]+out[,"I"]+out[,"R"]
+time<-out[,"time"]
+# weekly incidence
+inc <- 0*time
+inc[2:length(time)]<- -(out[2:length(time),"S"]-out[1:(length(time)-1),"S"])
 
-output_full<-melt(as.data.frame(output),id='time')
+
+# generate simulated data
+incdat1<-rnbinom(rep(1,length(times)), size= 200, mu=inc) #generate data from negative binomial process
+
+# COMPARING THE MODEL OUTPUT WITH DATA
+par(mfrow=c(1,1))
+yl <- c(0,max(incdat1,inc))
+plot(time,inc,type='l',lwd=3,main = "Incidence",xlab = "Time in years",ylab="New reported cases per day",ylim=yl,col='grey')
+points(time,incdat1,pch=19,col='black')
+
+x <- matrix(0,nrow=length(time),ncol=2)
+
+x[,1]<-time
+x[,2]<-incdat1
+# create data file
+write.csv(x, file = "new_data.csv", row.names = FALSE)
+
+
+
+
+#OLD CODES (Part 2)
+output_full<-melt(as.data.frame(out),id='time')
 #The purpose of the melt function is to transform a wide-format data frame into a long-format data frame. 
 
 
@@ -95,14 +124,5 @@ ggplot(data = output, aes(x = time, y = daily_incidence)) +
   xlab("Time in days") +
   ylab("Daily Incidence") +
   labs(title = "Daily Incidence of Infections")
-
-x <- matrix(0,nrow=length(time),ncol=2)
-x
-x[,1]<-time
-x[,2]<-output$daily_incidence
-
-
-#Write to Excel
-write.csv(x, file = "C:/Users/hp/OneDrive/Desktop/Shraddha laptop backup/Sumali Mam/codes/SIR_Simulation", row.names = FALSE)
 
 
