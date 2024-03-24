@@ -41,7 +41,7 @@ sir_model<-function(time, state, parameters){
 
 
 
-#Outputs
+#outs
 
 #Calculation of differential equations
 
@@ -58,7 +58,7 @@ inc[2:length(time)]<- -(out[2:length(time),"S"]-out[1:(length(time)-1),"S"])
 # generate simulated data
 incdat1<-rnbinom(rep(1,length(times)), size= 200, mu=inc) #generate data from negative binomial process
 
-# COMPARING THE MODEL OUTPUT WITH DATA
+# COMPARING THE MODEL out WITH DATA
 par(mfrow=c(1,1))
 yl <- c(0,max(incdat1,inc))
 plot(time,inc,type='l',lwd=3,main = "Incidence",xlab = "Time in years",ylab="New reported cases per day",ylim=yl,col='grey')
@@ -75,54 +75,41 @@ write.csv(x, file = "new_data.csv", row.names = FALSE)
 
 
 #OLD CODES (Part 2)
-output_full<-melt(as.data.frame(out),id='time')
+out_full<-melt(as.data.frame(out),id='time')
 #The purpose of the melt function is to transform a wide-format data frame into a long-format data frame. 
 
 
-output_full$proportion<-output_full$value/sum(state_values)
+out_full$proportion<-out_full$value/sum(state)
 #sum(state_values)=1000
-output_full
+out_full
 
 #Plot
 
-ggplot(data = output, aes(x = time, y = I)) +
-  geom_line() +
-  xlab("Time in days") +
-  ylab("Number of infected") +
-  labs(title = "SIR Model")
 
-ggplot(output_full,aes(x=time,y=proportion, color=variable, gropu=variable))+
+ggplot(out_full,aes(x=time,y=proportion, color=variable, gropu=variable))+
   geom_line()+
   xlab('Time in days')+
   ylab("Prevalence")+
   labs(color='Compartment',title='SIR Model')
 
 #Effective Reproduction Number
-output$reff<-parameters[1]/parameters[2]*output$S/(output$S+output$I+output$R)
-output$reff
-output$R0 <- parameters[1]/parameters[2]
-output$R0
+out$reff<-parameters[1]/parameters[2]*out$S/(out$S+out$I+out$R)
+out$reff
+out$R0 <- parameters[1]/parameters[2]
+out$R0
 ggplot()+
-  geom_line(data=output,aes(x=time,y=reff))+
-  geom_line(data=output,aes(x=time,y=R0),color='red')+
-  geom_line(data=output,aes(x=time,y=reff),color='green')+
+  geom_line(data=out,aes(x=time,y=reff))+
+  geom_line(data=out,aes(x=time,y=R0),color='red')+
+  geom_line(data=out,aes(x=time,y=reff),color='green')+
   xlab("Time in days")+
   ylab("Reff")+
   labs(title=paste("Reproduction number levels with: Beta = ",parameters[1],"and Gamma= ",parameters[2]))
 
 
 
-#To get incidence data from the infected dataset (To extract the daily incidence data from the output of the number of infected people, you can calculate the difference between the number of infected individuals on consecutive days. This will give you the number of newly infected people on each day. )
+#To get incidence data from the infected dataset (To extract the daily incidence data from the out of the number of infected people, you can calculate the difference between the number of infected individuals on consecutive days. This will give you the number of newly infected people on each day. )
 
 # Calculate daily incidence
-output$daily_incidence <- -c(0, diff(output$S))
-output
-
-# Plot daily incidence
-ggplot(data = output, aes(x = time, y = daily_incidence)) +
-  geom_line() +
-  xlab("Time in days") +
-  ylab("Daily Incidence") +
-  labs(title = "Daily Incidence of Infections")
-
+#out$daily_incidence <- -c(0, diff(out$S))
+#out
 
