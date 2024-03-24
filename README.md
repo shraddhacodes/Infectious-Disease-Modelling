@@ -14,6 +14,3 @@
 - **Description:** Poisson / NB discrete modelling for renewal equation modelling techniques.
 - **File Name:** `Discrete Renewal Model.R` `Discrete Renewal Model.stan`
 
-## EpiEstim
-- **Description:** Implementing EpiEstim Tutorial codes to understand its working.
-- **File Name:** `EpiEstim.R` 
