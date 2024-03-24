@@ -10,11 +10,10 @@ functions {
     
     // define parameters
     real beta = theta[1];
+    real i0= theta[2];
     
     //define integer data 
-    int n_recov = x_i[1]; 
-    int S0 = x_i[2]; 
-    int n_days = x_i[3];
+    int  N = x_i[1];
     
     //define compartments
     real S; real I; real R;
@@ -29,7 +28,7 @@ functions {
     S = y[1]; I = y[2]; R = y[3];
     
     //calculate FOI
-    FOI = beta * I / S0;  
+    FOI = beta * I / N;  
     
     //ODE
     dS_dt = -FOI * S;
@@ -40,50 +39,61 @@ functions {
 }
 
 data {
-  int<lower=1> n_ts;       // no of days observed
-  int<lower=1> n_data;    //no of data points to fit to
-  real<lower=0> gamma;   // recovery rate
-  int y[n_data];        // data, reported incidence each day
-  real ts[n_ts];       // 1:n_days
-  int<lower=1> n_pop;           // Total population size
-  int<lower=1> n_recov;         // Number of recovered individuals
-  int<lower=1> I0;             // Initial infectious population
+  int<lower=1> n_ts;    //no of days observed
+  real<lower=0> gamma;   //recovery rate
+  real ts[n_ts];        //1:n days
+  int cases[n_ts];     //incidence  
+  int N;          
+  real t0;             
 }
+
 
 transformed data {
-  int S0 = n_pop - n_recov-I0;
+  int x_i[1] = {N};
   real x_r[1] = {gamma};
-  int x_i[3] = {n_recov, S0,n_data};
 }
 
+
 parameters {
-  real<lower=0> beta;
+  real<lower=0,upper=50> beta;
+  real<lower=0,upper=1000> i0;
 }
 
 transformed parameters {
-  real y_hat[n_ts, 3];
-  real theta[1] = {beta};
-  real init[3] = {n_pop - n_recov - I0, I0, n_recov};  
-  real lambda[n_ts];
-  real generation_interval_distribution[n_ts];
-  real lambda_fit[n_data];
-  real initial_time = 0 ;
-  y_hat = integrate_ode_rk45(SIR, init, initial_time, ts, theta, x_r, x_i);
-  for (t in 1:n_ts) {
-    lambda[t] = beta * y_hat[t, 2] / S0;
-    generation_interval_distribution[t] = gamma * exp(-gamma * t);
+  real y[n_ts, 3];
+  real <lower=0> init[3];
+  real inc[n_ts];
+  {
+    real theta[2];
+    theta[1]=beta;
+    theta[2]=i0;
+    
+    init[1]=N;
+    init[2]=i0;
+    init[3]=N-i0;
+    
+    y=integrate_ode_rk45(SIR, init, t0, ts, theta, x_r, x_i);
+  }
+
+  for (t in 1:n_ts-1) {    
+    inc[t] = -(y[t+1, 1]-y[t, 1]);
   } 
-  
-  for (t in 1:n_ts) lambda_fit[t] = lambda[t] + 0.0001;
-  
-}
-  
-model {
-  target += poisson_lpmf(y | lambda_fit);
-  beta ~ normal(2.2, 1);
+  inc[n_ts]=inc[n_ts-1];
 }
 
+model {
+  //priors
+  beta ~ normal(10,8);
+  i0~normal(100,5);
+  
+  cases~neg_binomial_2(inc, 200);
+
+}
+
+
 generated quantities {
+  real pred_cases[n_ts];
+  pred_cases = neg_binomial_2_rng(inc, 200);
   real R_0 = beta / gamma;
 }
 
