@@ -1,5 +1,5 @@
 # Infectious Disease Modelling 
-This hithub repository has the codes and data for a simulation based study to compare two infectious disease modelling techniques namely Compartmental Models wherein a simple SIR case has been studied and Renewal Models. 
+This github repository has the codes and data for a simulation based study to compare two infectious disease modelling techniques namely Compartmental Models wherein a simple SIR case has been studied and Renewal Models. 
 
 ## compartmental_models
 1. R file using deSolve package to simulate SIR data and get incidence data out of it -> Excel file as output
