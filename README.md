@@ -21,7 +21,7 @@ The study aims to analyze and compare the effectiveness of these two techniques 
    - **Description**: Maintains a constant \(R_0\) value over a specified time period.
    - **Implementation**: The simulated data is backtested using `Stan` to verify the results.
    
-2. **Changing \(R_t\) (\(R_{t1}\) and \(R_{t2}\))**
+2. **Changing \(R_t\) (\(R_t1\) and \(R_t2\))**
    - **Description**: After 15 days, the \(R_t\) value changes.
    - **Implementation**: The change in \(R_t\) is modeled and the results are validated using `Stan`.
    
