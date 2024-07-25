@@ -6,9 +6,9 @@ install.packages("readr")
 library(readr)
 
 # Compile the Stan model
-stan_model <- stan_model('Beta Estimation 2 (Stan).stan')
+stan_model <- stan_model('Stan_SIR.stan')
 #Inputs
-inc_data <- read_csv("new_data.csv")
+inc_data <- read_csv("simulate_SIR_data.csv")
 cases<-round(inc_data[[2]])
 cases<-cases[-1]
 N<-50000000
@@ -49,7 +49,10 @@ par(mar = c(2, 2, 2, 2))
 dev.off()
 # Extract and summarize specific parameters
 summary(posterior$beta)
+#generated quantity
 summary(posterior$R_0)
+#prior 
+summary(posterior$R0)
 
 #Plots
 library(ggplot2)
@@ -59,16 +62,16 @@ qplot(beta)
 ##########################################3
 #Checking stan outputs
 beta_pred<-rstan::extract(stan_output)$beta
-R0_pred<-rstan::extract(stan_output)$R0
+R0_pred<-rstan::extract(stan_output)$R_0
 
 library(bayesplot)
 mcmc_areas(stan_output,pars = "beta",prob = 0.95)    #95% credible interval 
-mcmc_areas(stan_output,pars = "R0",prob = 0.95)      
+mcmc_areas(stan_output,pars = "R_0",prob = 0.95)      
     
 
 #diagnostic plots
-traceplot(stan_output, pars = c( "beta","R0"))
-stan_dens(stan_output, pars =  c("beta","R0"), separate_chains = TRUE)
+traceplot(stan_output, pars = c( "beta","R_0"))
+stan_dens(stan_output, pars =  c("beta","R_0"), separate_chains = TRUE)
 
 #Plot fitting results
 pred_cases_SIR<-rstan::extract(stan_output)$pred_cases
